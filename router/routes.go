@@ -13,7 +13,7 @@ import (
 
 func RegisterRoutes(app core.App) {
 	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
-		se.Router.GET("/api/items", func(e *core.RequestEvent) error {
+		se.Router.GET("/api/collections/v2/items", func(e *core.RequestEvent) error {
 			q := e.Request.URL.Query()
 
 			limit, _ := strconv.Atoi(q.Get("limit"))
@@ -41,6 +41,15 @@ func RegisterRoutes(app core.App) {
 			}
 
 			return e.JSON(200, items)
+		})
+
+		se.Router.GET("/api/collections/v2/items/{id}", func(e *core.RequestEvent) error {
+			id := e.Request.URL.Query().Get("id")
+			item, err := services.GetItem(e.App, id)
+			if err != nil {
+				return e.JSON(500, map[string]any{"error": err.Error()})
+			}
+			return e.JSON(200, item)
 		})
 
 		// статика
