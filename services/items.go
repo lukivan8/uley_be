@@ -17,7 +17,12 @@ type ItemsFilter struct {
 	Sort       string
 }
 
-func ListItems(app core.App, f ItemsFilter) ([]map[string]any, error) {
+type ItemsResponse struct {
+	Items []map[string]any `json:"items"`
+	Total int              `json:"total"`
+}
+
+func ListItems(app core.App, f ItemsFilter) (ItemsResponse, error) {
 	parts := []string{}
 	params := dbx.Params{}
 
@@ -40,6 +45,16 @@ func ListItems(app core.App, f ItemsFilter) ([]map[string]any, error) {
 
 	filter := strings.Join(parts, " && ")
 
+	total := 0
+	query := app.DB().Select("COUNT(*)").From("items")
+	if filter != "" {
+		query = query.Where(dbx.NewExp(filter, params))
+	}
+	err := query.Row(&total)
+	if err != nil {
+		return ItemsResponse{}, err
+	}
+
 	sort := f.Sort
 	if sort == "" {
 		sort = "-created"
@@ -47,14 +62,18 @@ func ListItems(app core.App, f ItemsFilter) ([]map[string]any, error) {
 
 	records, err := app.FindRecordsByFilter("items", filter, sort, f.Limit, f.Offset, params)
 	if err != nil {
-		return nil, err
+		return ItemsResponse{}, err
 	}
 
-	_ = app.ExpandRecords(records, []string{"category", "author"}, nil)
+	_ = app.ExpandRecords(records, []string{"category", "author", "photos"}, nil)
 
-	result := make([]map[string]any, len(records))
+	items := make([]map[string]any, len(records))
 	for i, r := range records {
-		result[i] = r.PublicExport()
+		items[i] = r.PublicExport()
 	}
-	return result, nil
+
+	return ItemsResponse{
+		Items: items,
+		Total: total,
+	}, nil
 }

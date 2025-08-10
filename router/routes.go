@@ -40,7 +40,7 @@ func RegisterRoutes(app core.App) {
 				return e.JSON(500, map[string]any{"error": err.Error()})
 			}
 
-			return e.JSON(200, map[string]any{"items": items})
+			return e.JSON(200, items)
 		})
 
 		// статика
