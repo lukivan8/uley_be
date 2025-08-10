@@ -1339,7 +1339,7 @@ func init() {
 			}
 		]`
 
-		return app.ImportCollectionsByMarshaledJSON([]byte(jsonData), false)
+		return app.ImportCollectionsByMarshaledJSON([]byte(jsonData), true)
 	}, func(app core.App) error {
 		return nil
 	})
