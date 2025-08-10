@@ -34,4 +34,4 @@ EXPOSE 8090
 VOLUME ["/pb_data"]
 
 # Run the application
-CMD ["./main", "serve"]
+CMD ["./main", "serve", "--http=0.0.0.0:8090"]
