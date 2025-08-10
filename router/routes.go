@@ -49,6 +49,9 @@ func RegisterRoutes(app core.App) {
 			if err != nil {
 				return e.JSON(500, map[string]any{"error": err.Error()})
 			}
+			if item == nil {
+				return e.JSON(404, map[string]any{"error": "item not found"})
+			}
 			return e.JSON(200, item)
 		})
 

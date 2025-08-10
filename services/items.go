@@ -79,12 +79,15 @@ func ListItems(app core.App, f ItemsFilter) (ItemsResponse, error) {
 }
 
 func GetItem(app core.App, id string) (map[string]any, error) {
-	record, err := app.FindFirstRecordByFilter("items", "id = {:id}", dbx.Params{"id": id})
-
-	_ = app.ExpandRecords([]*core.Record{record}, []string{"category", "author", "photos"}, nil)
-
+	record, err := app.FindRecordById("items", id)
 	if err != nil {
 		return nil, err
 	}
+
+	if record == nil {
+		return nil, nil
+	}
+
+	_ = app.ExpandRecords([]*core.Record{record}, []string{"category", "author", "photos"}, nil)
 	return record.PublicExport(), nil
 }
