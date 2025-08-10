@@ -13,11 +13,7 @@ import (
 
 func init() {
 	m.Register(func(app core.App) error {
-
-		err := godotenv.Load()
-		if err != nil {
-			return err
-		}
+		godotenv.Load()
 
 		password := os.Getenv("SUPERUSER_PASSWORD")
 		if password == "" {
