@@ -1,0 +1,18 @@
+# Version control
+.git
+.gitignore
+
+# Dependencies
+vendor/
+
+# Build artifacts
+pb_data/
+
+# IDE specific files
+.idea/
+.vscode/
+
+# Misc
+README.md
+Dockerfile
+.dockerignore
