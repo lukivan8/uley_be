@@ -45,16 +45,6 @@ func ListItems(app core.App, f ItemsFilter) (ItemsResponse, error) {
 
 	filter := strings.Join(parts, " && ")
 
-	total := 0
-	query := app.DB().Select("COUNT(*)").From("items")
-	if filter != "" {
-		query = query.Where(dbx.NewExp(filter, params))
-	}
-	err := query.Row(&total)
-	if err != nil {
-		return ItemsResponse{}, err
-	}
-
 	sort := f.Sort
 	if sort == "" {
 		sort = "-created"
@@ -74,20 +64,16 @@ func ListItems(app core.App, f ItemsFilter) (ItemsResponse, error) {
 
 	return ItemsResponse{
 		Items: items,
-		Total: total,
+		Total: len(items),
 	}, nil
 }
 
 func GetItem(app core.App, id string) (map[string]any, error) {
-	record, err := app.FindRecordById("items", id)
+	records, err := app.FindRecordsByFilter("items", "id = {:id}", "", 1, 0, dbx.Params{"id": id})
 	if err != nil {
 		return nil, err
 	}
 
-	if record == nil {
-		return nil, nil
-	}
-
-	_ = app.ExpandRecords([]*core.Record{record}, []string{"category", "author", "photos"}, nil)
-	return record.PublicExport(), nil
+	_ = app.ExpandRecords(records, []string{"category", "author", "photos"}, nil)
+	return records[0].PublicExport(), nil
 }

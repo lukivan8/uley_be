@@ -44,7 +44,7 @@ func RegisterRoutes(app core.App) {
 		})
 
 		se.Router.GET("/api/collections/v2/items/{id}", func(e *core.RequestEvent) error {
-			id := e.Request.URL.Query().Get("id")
+			id := e.Request.PathValue("id")
 			item, err := services.GetItem(e.App, id)
 			if err != nil {
 				return e.JSON(500, map[string]any{"error": err.Error()})
