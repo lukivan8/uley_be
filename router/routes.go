@@ -4,6 +4,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"uley_be/services"
 
@@ -53,6 +54,67 @@ func RegisterRoutes(app core.App) {
 				return e.JSON(404, map[string]any{"error": "item not found"})
 			}
 			return e.JSON(200, item)
+		})
+
+		se.Router.GET("/api/rents/{item_id}", func(e *core.RequestEvent) error {
+			item_id := e.Request.PathValue("item_id")
+			if item_id == "" {
+				return e.JSON(400, map[string]any{"error": "item_id is required"})
+			}
+
+			rent, err := services.GetRentByItemID(e.App, item_id)
+			if err != nil {
+				return e.JSON(500, map[string]any{"error": err.Error()})
+			}
+			if rent == nil {
+				return e.JSON(404, map[string]any{"error": "rent not found"})
+			}
+
+			return e.JSON(200, rent)
+		})
+
+		se.Router.POST("/api/rents/{item_id}", func(e *core.RequestEvent) error {
+			q := e.Request.URL.Query()
+			params := services.RentItemRequest{}
+
+			itemID := e.Request.PathValue("item_id")
+			if itemID == "" {
+				return e.JSON(400, map[string]any{"error": "item_id is required"})
+			}
+			params.ItemID = itemID
+
+			renterID := q.Get("renter_id")
+			if renterID == "" {
+				return e.JSON(400, map[string]any{"error": "renter_id is required"})
+			}
+			params.RenterID = renterID
+
+			dateStartStr := q.Get("date_start")
+			if dateStartStr == "" {
+				return e.JSON(400, map[string]any{"error": "date_start is required"})
+			}
+			dateStart, err := time.Parse(time.RFC3339, dateStartStr)
+			if err != nil {
+				return e.JSON(400, map[string]any{"error": "invalid date_start format, must be RFC3339"})
+			}
+			params.DateStart = dateStart
+
+			dateEndStr := q.Get("date_end")
+			if dateEndStr == "" {
+				return e.JSON(400, map[string]any{"error": "date_end is required"})
+			}
+			dateEnd, err := time.Parse(time.RFC3339, dateEndStr)
+			if err != nil {
+				return e.JSON(400, map[string]any{"error": "invalid date_end format, must be RFC3339"})
+			}
+			params.DateEnd = dateEnd
+
+			rents, err := services.RentItem(e.App, params)
+			if err != nil {
+				return e.JSON(500, map[string]any{"error": err.Error()})
+			}
+
+			return e.JSON(200, map[string]any{"rents": rents})
 		})
 
 		// статика
