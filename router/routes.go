@@ -117,6 +117,20 @@ func RegisterRoutes(app core.App) {
 			return e.JSON(200, map[string]any{"rents": rents})
 		})
 
+		se.Router.GET("/api/rents/{item_id}/days", func(e *core.RequestEvent) error {
+			itemID := e.Request.PathValue("item_id")
+			if itemID == "" {
+				return e.JSON(400, map[string]any{"error": "item_id is required"})
+			}
+
+			days, err := services.RentedDays(e.App, itemID)
+			if err != nil {
+				return e.JSON(500, map[string]any{"error": err.Error()})
+			}
+
+			return e.JSON(200, days)
+		})
+
 		// статика
 		se.Router.GET("/{path...}", apis.Static(os.DirFS("./pb_public"), false))
 
